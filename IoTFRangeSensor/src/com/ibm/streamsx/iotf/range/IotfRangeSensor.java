@@ -49,9 +49,7 @@ public class IotfRangeSensor {
 	        DirectProvider tp = new DirectProvider();
 	        DirectTopology topology = tp.newTopology("IotfRangeSensor");
 	        
-	        IotDevice device;
-	        
-	        device = getIotDevice(deviceCfg, topology);
+	        IotDevice device = getIotDevice(deviceCfg, topology);
 	
 	        // HC-SR04 Range sensor for this device.
 	        rangeSensor(device, simulatedRange, true);
