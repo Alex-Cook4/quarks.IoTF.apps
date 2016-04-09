@@ -30,6 +30,15 @@ public class IotfRangeSensor {
     private static final Pin ledPin = RaspiPin.GPIO_01;
     
 	public static void main(String[] args) {
+		
+		 	if(args.length != 2)
+		    {
+		        System.out.println("Proper Usage is:\n   "
+		        		+ "   java program device.cfg simulated_boolean \n"
+		        		+ "Example: \n"
+		        		+ "   java -cp $QUARKS/target/java8/samples/lib/'*':$PI4J_LIB/'*':bin/ com.ibm.streamsx.iotf.range.IotfRangeSensor device.cfg false");
+		        System.exit(0);
+		    }
 	        
 	        String deviceCfg = args[0];
 	        Boolean simulated = Boolean.parseBoolean(args[1]);
