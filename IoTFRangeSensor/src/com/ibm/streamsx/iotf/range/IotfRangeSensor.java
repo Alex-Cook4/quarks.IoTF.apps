@@ -31,7 +31,7 @@ public class IotfRangeSensor {
     
 	public static void main(String[] args) {
 		
-		 	if(args.length != 2)
+		 	if(args.length != 3)
 		    {
 		        System.out.println("Proper Usage is:\n   "
 		        		+ "   java program device.cfg simulated_boolean \n"
@@ -41,21 +41,23 @@ public class IotfRangeSensor {
 		    }
 	        
 	        String deviceCfg = args[0];
-	        Boolean simulated = Boolean.parseBoolean(args[1]);
+	        Boolean simulatedRange = Boolean.parseBoolean(args[1]);
+	        Boolean simulatedLED = Boolean.parseBoolean(args[2]);
 	        
 	        DirectProvider tp = new DirectProvider();
-	        DirectTopology topology = tp.newTopology("IotfSensors");
+	        DirectTopology topology = tp.newTopology("IotfRangeSensor");
 	
 	        // Declare a connection to IoTF
 	        IotDevice device = new IotfDevice(topology, new File(deviceCfg));
 	
 	        // HC-SR04 Range sensor for this device.
-	        rangeSensor(device, simulated, true);
+	        rangeSensor(device, simulatedRange, true);
 	        
 	        // In addition create a heart beat event to
 	        // ensure there is some immediate output and
 	        // the connection to IoTF happens as soon as possible.
 	        TStream<Date> hb = topology.poll(() -> new Date(), 1, TimeUnit.MINUTES);
+	        
 	        // Convert to JSON
 	        TStream<JsonObject> hbj = hb.map(d -> {
 	            JsonObject j = new  JsonObject();
@@ -70,9 +72,14 @@ public class IotfRangeSensor {
 	        // device and print them to standard out
 	        TStream<String> statusMsgs = displayMessages(device);
 	        statusMsgs.print();
-	        if (!simulated){
+	        
+	        
+	        //Flash an LED for 1second when we receive commands from IoTF
+	        if (!simulatedLED){
 	        	LED led = new LED(ledPin);
 	        	statusMsgs.sink(j -> led.flash(1000));
+	        } else {
+	        	statusMsgs.sink(j -> System.out.println("*******Simulated LED Flash!*******"));
 	        }
 	
 	        tp.submit(topology);
