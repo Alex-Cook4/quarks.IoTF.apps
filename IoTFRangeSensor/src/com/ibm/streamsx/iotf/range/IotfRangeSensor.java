@@ -7,6 +7,7 @@ import static quarks.analytics.math3.stat.Statistic.STDDEV;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonElement;
@@ -34,21 +35,23 @@ public class IotfRangeSensor {
 		 	if(args.length != 3)
 		    {
 		        System.out.println("Proper Usage is:\n   "
-		        		+ "   java program device.cfg simulated_boolean \n"
+		        		+ "   java program device.cfg sensorIsSimulated LEDIsSimulated\n"
 		        		+ "Example: \n"
-		        		+ "   java -cp $QUARKS/target/java8/samples/lib/'*':$PI4J_LIB/'*':bin/ com.ibm.streamsx.iotf.range.IotfRangeSensor device.cfg false");
+		        		+ "   java -cp $QUARKS/target/java8/samples/lib/'*':$PI4J_LIB/'*':bin/ com.ibm.streamsx.iotf.range.IotfRangeSensor device.cfg false true");
 		        System.exit(0);
 		    }
 	        
+
 	        String deviceCfg = args[0];
 	        Boolean simulatedRange = Boolean.parseBoolean(args[1]);
 	        Boolean simulatedLED = Boolean.parseBoolean(args[2]);
 	        
 	        DirectProvider tp = new DirectProvider();
 	        DirectTopology topology = tp.newTopology("IotfRangeSensor");
-	
-	        // Declare a connection to IoTF
-	        IotDevice device = new IotfDevice(topology, new File(deviceCfg));
+	        
+	        IotDevice device;
+	        
+	        device = getIotDevice(deviceCfg, topology);
 	
 	        // HC-SR04 Range sensor for this device.
 	        rangeSensor(device, simulatedRange, true);
@@ -84,6 +87,30 @@ public class IotfRangeSensor {
 	
 	        tp.submit(topology);
 	    }
+
+	/*
+	 * Returns an IotDevice based on the device config parameter.
+	 * If the type is "quickstart" then we also output the URL to view the data. 
+	 */
+	private static IotDevice getIotDevice(String deviceCfg, DirectTopology topology) {
+		IotDevice device;
+		
+		if (deviceCfg.equalsIgnoreCase("quickstart")){
+		    // Declare a connection to IoTF Quickstart service
+		    String deviceId = "qs" + Long.toHexString(new Random().nextLong());
+		    device = IotfDevice.quickstart(topology, deviceId);
+		    
+		    System.out.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
+		    System.out.println("Quickstart device id  :" + deviceId);
+		    System.out.println("https://quickstart.internetofthings.ibmcloud.com/#/device/"
+		         + deviceId);
+		} else {
+			// Declare a connection to IoTF
+			device = new IotfDevice(topology, new File(deviceCfg));
+		}
+		
+		return device;
+	}
 
     /**
      * Connect to an HC-SR04 Range Sensor
