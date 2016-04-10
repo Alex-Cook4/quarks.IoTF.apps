@@ -28,7 +28,7 @@ import quarks.topology.TWindow;
 public class IotfRangeSensor {
     private static final Pin echoPin = RaspiPin.GPIO_05; // PI4J custom numbering (pin 18 on RPi2)
     private static final Pin trigPin = RaspiPin.GPIO_04; // PI4J custom numbering (pin 16 on RPi2)
-    private static final Pin ledPin = RaspiPin.GPIO_01;
+    private static final Pin ledPin = RaspiPin.GPIO_01; // PI4J custom numbering (pin 12 on RPi2)
     
 	public static void main(String[] args) {
 		
