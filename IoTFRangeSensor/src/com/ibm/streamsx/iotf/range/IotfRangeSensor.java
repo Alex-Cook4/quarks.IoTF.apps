@@ -132,7 +132,7 @@ public class IotfRangeSensor {
 		TStream<Double> distanceReadings = device.topology().poll(sensor, 1, TimeUnit.SECONDS);
 		distanceReadings.print();
 		
-		//filter out bad reading that are out of the sensor's 4m range
+		//filter out bad readings that are out of the sensor's 4m range
 		distanceReadings = distanceReadings.filter(j -> j < 400.0);
 		
 		TStream<JsonObject> sensorJSON = distanceReadings.map(v -> {
@@ -142,15 +142,15 @@ public class IotfRangeSensor {
 			return j;
 		});
         
-        // Create a window on the stream of the last 50 readings partitioned
-        // by sensor name. In this case two independent windows are created (for a and b)
-        TWindow<JsonObject,JsonElement> sensorWindow = sensorJSON.last(20, j -> j.get("name"));
+        // Create a window on the stream of the last 10 readings partitioned
+        // by sensor name. In this case we only have one range sensor so there will be one partition. 
+        TWindow<JsonObject,JsonElement> sensorWindow = sensorJSON.last(10, j -> j.get("name"));
         
         // Aggregate the windows calculating the min, max, mean and standard deviation
         // across each window independently.
         sensorJSON = JsonAnalytics.aggregate(sensorWindow, "name", "reading", MIN, MAX, MEAN, STDDEV);
         
-        // Filter so that only when the sensor is beyond 2.0 (absolute) is a reading sent.
+        // Filter so that only when the mean sensor reading is that an object is closer than 30cm send data. 
         sensorJSON = sensorJSON.filter(j -> Math.abs(j.get("reading").getAsJsonObject().get("MEAN").getAsDouble()) < 30.0);
         
         if (print)
